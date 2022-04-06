@@ -65,7 +65,7 @@ def delete_txt_files():
 
 
 delete_txt_files()
-for link in get_links():
-        get_page(link)
-search_words("high")
+#for link in get_links():
+#        get_page(link)
+#3search_words("high")
 

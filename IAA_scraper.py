@@ -1,18 +1,16 @@
 # Python program to scrape table from website
 
 # import libraries selenium and time
+import itertools
 import time
-
+from itertools import groupby
+import json
 from selenium import webdriver
 from time import sleep
 import os
 # Create webdriver object
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-# To use Tor's SOCKS proxy server with chrome, include the socks protocol in the scheme with the --proxy-server option
-# PROXY = "socks5://127.0.0.1:9150" # IP:PORT or HOST:PORT
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 def initialize_driver():
     options = webdriver.ChromeOptions()
@@ -29,33 +27,29 @@ def initialize_driver():
     # first tab. Open google.com in the first tab
     driver.get('http://google.com')
     # second tab
-    # execute_script->Executes JavaScript snippet.
-    # Here the snippet is window.open that means, it
-    # opens in a new browser tab
     driver.execute_script("window.open('about:blank','secondtab');")
     # It is switching to second tab now
     driver.switch_to.window("secondtab")
     # In the second tab, it opens IIA
-    # Get the website
     driver.get("http://www.iaa.gov.il/he-IL/airports/BenGurion/Pages/OnlineFlights.aspx")
     sleep(2)
     driver.refresh();
     # Make Python sleep for some time
     sleep(2)
-    # Obtain the number of rows in body
-    rows = 1 + len(driver.find_elements(By.XPATH,
-        "/html/body/div[2]/main/article/section/div[3]/div[1]/div/div/table/tbody/tr"))
-    sleep(2)
-    # Obtain the number of columns in table
-    cols = len(driver.find_elements(By.XPATH,
-        "/html/body/div[2]/main/article/section/div[3]/div[1]/div/div/table/tbody/tr[1]/td"))
     # Print rows and columns
     #print(rows)
     #print(cols)
     # Printing the table headers
 
 #save table content to txt
-def save_to_txt():
+#def save_to_txt(driver):
+    # Obtain the number of rows in body
+    rows = 1 + len(driver.find_elements(By.XPATH,
+                                        "/html/body/div[2]/main/article/section/div[3]/div[1]/div/div/table/tbody/tr"))
+    sleep(2)
+    # Obtain the number of columns in table
+    cols = len(driver.find_elements(By.XPATH,
+                                    "/html/body/div[2]/main/article/section/div[3]/div[1]/div/div/table/tbody/tr[1]/td"))
     new_file_name= 'table res '+str(time.time())+'.txt'
     table_txt = open(new_file_name, "a", encoding="utf-8")
     for r in range(1, rows + 1):
@@ -64,14 +58,37 @@ def save_to_txt():
             value = driver.find_elements(By.XPATH,
                 "/html/body/div[2]/main/article/section/div[3]/div[1]/div/div/table/tbody/tr[" + str(
                     r) + "]/td[" + str(p) + "]")
-            descList= ["חברת תעופה", "טיסה", "נוחת מ", "טרמינל", "זמן מתוכנן", "זמן עדכני", "סטאטוס"]
             for val in value:
                 table_txt.write(val.text+ "\n")
     print("new file: "+new_file_name)
     table_txt.close()
+    return new_file_name
 
-#save_to_txt()
+
 
 def table_txt_to_json(txt_file_name):
-    print("done")
+    names = ["חברת תעופה", "טיסה", "נוחת מ", "טרמינל", "זמן מתוכנן", "תאריך", "זמן עדכני", "סטאטוס", "כלום"]
+    with open(txt_file_name, 'r', encoding="utf8") as f_in, open('formatted.json', 'w', encoding="utf8") as f_out:
+        lines= f_in.read()
+        rows = lines.split("\n\n")
+        listOfRows= []
+        for doc in rows:
+            doc = doc.split('\n')
+            listOfRows.append(doc)
 
+        finalList= []
+        for row in listOfRows:
+            finalRow= {}
+            i=0
+            for word in row:
+                desc= names[i]
+                finalRow[desc]=word
+                i+=1
+            finalList.append(finalRow)
+
+        f_out.write( json.dumps(finalList, indent=4, ensure_ascii=False))
+        f_out.close()
+    f_in.close()
+
+table_txt_to_json("table res 1649256578.6753902.txt")
+#table_txt_to_json("res high 1649245719.8226411.txt")
