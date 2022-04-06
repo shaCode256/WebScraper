@@ -4,11 +4,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
 import glob
+import time
 
 url = "https://www.bbc.com/"
 options = webdriver.ChromeOptions()
 options.headless = True
-
 driver= webdriver.Chrome(options=options)
 
 def get_links():
@@ -19,11 +19,9 @@ def get_links():
         elems = driver.find_elements(By.CLASS_NAME, class_name)
         for elem in elems:
             links.append(elem.get_attribute('href'))
-    print(len(links))
     return links
 
 def get_page(url):
-    print("count")
     response = requests.get(url)
     soup = BeautifulSoup(response.text, features='lxml')
     findings= soup.find('h1', {"id": "main-heading"})
@@ -36,26 +34,23 @@ def get_page(url):
                 if block:
                     f.write(block.getText())
                     f.write('\n')
-            f.write("url: "+ url)
+            f.write(url)
         f.close()
 
-#for link in get_links():
-#        get_page(link)
-
 def search_words(words):
-    for filename in os.listdir(os.getcwd()):
-        for file in glob.glob(os.path.join(os.getcwd(),'*.txt')):
-            file1 = open(file, "r")
-            last_line = file1.readlines()[-1]
-            print(last_line)
+    search_results = open('res ' +words+' '+str(time.time())+'.txt', "a")
+    for file in glob.glob(os.path.join(os.getcwd(),'*.txt')):
+        file1 = open(file, "r")
+        readfile = file1.read()
     # read file content
-            readfile = file1.read()
     # checking condition for string found or not
-            if words in readfile:
-                print("hey")#print the article url
+        if words in readfile:
+            file1.seek(0)
+            last_line = file1.readlines()[-1]
+            search_results.write(last_line+"\n")#print the article url
     # closing a file
-            file1.close()
-
+        file1.close()
+    search_results.close()
 
 def delete_txt_files():
     for filename in os.listdir(os.getcwd()):
@@ -65,6 +60,7 @@ def delete_txt_files():
 
 
 
-
-#search_words("cost")
+#for link in get_links():
+#        get_page(link)
+#search_words("hey")
 #delete_txt_files()
