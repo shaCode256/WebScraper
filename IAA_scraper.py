@@ -1,6 +1,7 @@
 # Python program to scrape table from website
 
 # import libraries selenium and time
+import glob
 import itertools
 import time
 from itertools import groupby
@@ -11,6 +12,9 @@ import os
 # Create webdriver object
 from selenium.webdriver.common.by import By
 from selenium import webdriver
+
+from BBC_scraper import is_phrase_in
+
 
 def initialize_driver():
     options = webdriver.ChromeOptions()
@@ -89,6 +93,26 @@ def table_txt_to_json(txt_file_name):
         f_out.write( json.dumps(finalList, indent=4, ensure_ascii=False))
         f_out.close()
     f_in.close()
+    os.remove(os.path.join(os.getcwd(), txt_file_name))
 
-table_txt_to_json("table res 1649256578.6753902.txt")
-#table_txt_to_json("res high 1649245719.8226411.txt")
+
+def search_words(words):
+    new_file_name= 'res ' +words+' '+str(time.time())+'.txt'
+    search_results = open(new_file_name, "ab")
+    for file in glob.glob(os.path.join(os.getcwd(),'*.json')):
+        file1 = open(file, "r", encoding= "utf8")
+        readfile = file1.read()
+    # read file content
+    # checking condition for string found or not
+        if is_phrase_in(words, readfile):
+            file1.seek(0)
+            encoded_file= readfile.encode('utf8')
+            search_results.write(encoded_file)
+    # closing a file
+        file1.close()
+    print("new file_name " + search_results.name)
+    search_results.close()
+
+
+#table_txt_to_json("table res 1649256578.6753902.txt")
+search_words("פריס")
