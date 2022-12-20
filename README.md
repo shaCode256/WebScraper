@@ -5,7 +5,8 @@ articles from main page of BBC,
 and the flights table from IAA's site.
 Using Selenium lib. 
 
-For example. fetches data on flights from Paris (Hebrew: פריס):
+## For example. fetches data on flights from Paris (Hebrew: פריס):
+##
     {
         "חברת תעופה": "EL AL ISRAEL AIRLINES",
         "טיסה": "LY 320",
